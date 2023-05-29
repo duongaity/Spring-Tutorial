@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: AWS Serverless Spring Boot 2 API
+
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+  Function:
+    Timeout: 180
+
+Parameters:
+  EnvironmentName:
+    Description: 'Required. Environment you are deploying'
+    Type: String
+    Default: dev
+
+Resources:
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref EnvironmentName
+      OpenApiVersion: '2.0'
+      Description: API supporting the application
+      Cors:
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowMethods: "'DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT'"
+        AllowOrigin: "'*'"
+  SpringServerlessWithAwsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.gateam.spring.serverless.StreamLambdaHandler::handleRequest
+      Runtime: java17
+      CodeUri: .
+      MemorySize: 512
+      Policies: AWSLambdaBasicExecutionRole
+      Timeout: 30
+      Events:
+        ProxyResource:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+            RestApiId: !Ref ApiGatewayApi
+
+Outputs:
+  SpringServerlessWithAwsApi:
+    Description: URL for application
+    Value: !Sub 'https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}'
+    Export:
+      Name: ApiGatewayApi

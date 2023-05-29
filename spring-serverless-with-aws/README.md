@@ -3,39 +3,43 @@ The spring-serverless-with-aws project, created with [`aws-serverless-java-conta
 
 The starter project defines a simple `/ping` resource that can accept `GET` requests with its tests.
 
-The project folder also includes a `sam.yaml` file. You can use this [SAM](https://github.com/awslabs/serverless-application-model) file to deploy the project to AWS Lambda and Amazon API Gateway or test in local with [SAM Local](https://github.com/awslabs/aws-sam-local). 
+The project folder also includes a `template.yml` file. You can use this [SAM](https://github.com/awslabs/serverless-application-model) file to deploy the project to AWS Lambda and Amazon API Gateway or test in local with the [SAM CLI](https://github.com/awslabs/aws-sam-cli). 
 
-Using [Maven](https://maven.apache.org/), you can create an AWS Lambda-compatible jar file simply by running the maven package command from the projct folder.
+## Pre-requisites
+* [AWS CLI](https://aws.amazon.com/cli/)
+* [SAM CLI](https://github.com/awslabs/aws-sam-cli)
+* [Gradle](https://gradle.org/) or [Maven](https://maven.apache.org/)
 
+## Building the project
+You can use the SAM CLI to quickly build the project
 ```bash
-$ mvn archetype:generate -DartifactId=my-spring-api -DarchetypeGroupId=com.amazonaws.serverless.archetypes -DarchetypeArtifactId=aws-serverless-spring-archetype -DarchetypeVersion=1.0-SNAPSHOT -DgroupId=com.sapessi.spring -Dversion=0.1 -Dinteractive=false
-$ cd my-spring-api
-$ mvn clean package
+$ mvn archetype:generate -DartifactId=spring-serverless-with-aws -DarchetypeGroupId=com.amazonaws.serverless.archetypes -DarchetypeArtifactId=aws-serverless-jersey-archetype -DarchetypeVersion=2.0.0-M1 -DgroupId=com.gateam.spring.serverless -Dversion=1.0-SNAPSHOT -Dinteractive=false
+$ cd spring-serverless-with-aws
+$ sam build
+Building resource 'SpringServerlessWithAwsFunction'
+Running JavaGradleWorkflow:GradleBuild
+Running JavaGradleWorkflow:CopyArtifacts
 
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time: 6.546 s
-[INFO] Finished at: 2018-02-15T08:39:33-08:00
-[INFO] Final Memory: XXM/XXXM
-[INFO] ------------------------------------------------------------------------
+Build Succeeded
+
+Built Artifacts  : .aws-sam/build
+Built Template   : .aws-sam/build/template.yaml
+
+Commands you can use next
+=========================
+[*] Invoke Function: sam local invoke
+[*] Deploy: sam deploy --guided
 ```
 
-You can use [AWS SAM Local](https://github.com/awslabs/aws-sam-local) to start your project.
+## Testing locally with the SAM CLI
 
-First, install SAM local:
-
-```bash
-$ npm install -g aws-sam-local
-```
-
-Next, from the project root folder - where the `sam.yaml` file is located - start the API with the SAM Local CLI.
+From the project root folder - where the `template.yml` file is located - start the API with the SAM CLI.
 
 ```bash
-$ sam local start-api --template sam.yaml
+$ sam local start-api
 
 ...
-Mounting com.gateam.spring.serverless.StreamLambdaHandler::handleRequest (java8) at http://127.0.0.1:3000/{proxy+} [OPTIONS GET HEAD POST PUT DELETE PATCH]
+Mounting com.amazonaws.serverless.archetypes.StreamLambdaHandler::handleRequest (java11) at http://127.0.0.1:3000/{proxy+} [OPTIONS GET HEAD POST PUT DELETE PATCH]
 ...
 ```
 
@@ -49,53 +53,22 @@ $ curl -s http://127.0.0.1:3000/ping | python -m json.tool
 }
 ``` 
 
-You can use the [AWS CLI](https://aws.amazon.com/cli/) to quickly deploy your application to AWS Lambda and Amazon API Gateway with your SAM template.
-
-You will need an S3 bucket to store the artifacts for deployment. Once you have created the S3 bucket, run the following command from the project's root folder - where the `sam.yaml` file is located:
-
-```
-$ aws cloudformation package --template-file sam.yaml --output-template-file output-sam.yaml --s3-bucket <YOUR S3 BUCKET NAME>
-Uploading to xxxxxxxxxxxxxxxxxxxxxxxxxx  6464692 / 6464692.0  (100.00%)
-Successfully packaged artifacts and wrote output template to file output-sam.yaml.
-Execute the following command to deploy the packaged template
-aws cloudformation deploy --template-file /your/path/output-sam.yaml --stack-name <YOUR STACK NAME>
-```
-
-As the command output suggests, you can now use the cli to deploy the application. Choose a stack name and run the `aws cloudformation deploy` command from the output of the package command.
- 
-```
-$ aws cloudformation deploy --template-file output-sam.yaml --stack-name ServerlessSpringApi --capabilities CAPABILITY_IAM
-```
-
-Once the application is deployed, you can describe the stack to show the API endpoint that was created. The endpoint should be the `ServerlessSpringApi` key of the `Outputs` property:
+## Deploying to AWS
+To deploy the application in your AWS account, you can use the SAM CLI's guided deployment process and follow the instructions on the screen
 
 ```
-$ aws cloudformation describe-stacks --stack-name ServerlessSpringApi
-{
-    "Stacks": [
-        {
-            "StackId": "arn:aws:cloudformation:us-west-2:xxxxxxxx:stack/ServerlessSpringApi/xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx", 
-            "Description": "AWS Serverless Spring API - com.gateam.spring.serverless::spring-serverless-with-aws", 
-            "Tags": [], 
-            "Outputs": [
-                {
-                    "Description": "URL for application",
-                    "ExportName": "SpringServerlessWithAwsApi",  
-                    "OutputKey": "SpringServerlessWithAwsApi",
-                    "OutputValue": "https://xxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/ping"
-                }
-            ], 
-            "CreationTime": "2016-12-13T22:59:31.552Z", 
-            "Capabilities": [
-                "CAPABILITY_IAM"
-            ], 
-            "StackName": "ServerlessSpringApi", 
-            "NotificationARNs": [], 
-            "StackStatus": "UPDATE_COMPLETE"
-        }
-    ]
-}
+$ sam deploy --guided
+```
 
+Once the deployment is completed, the SAM CLI will print out the stack's outputs, including the new application URL. You can use `curl` or a web browser to make a call to the URL
+
+```
+...
+-------------------------------------------------------------------------------------------------------------
+OutputKey-Description                        OutputValue
+-------------------------------------------------------------------------------------------------------------
+SpringServerlessWithAwsApi - URL for application            https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/pets
+-------------------------------------------------------------------------------------------------------------
 ```
 
 Copy the `OutputValue` into a browser or use curl to test your first request:
@@ -106,4 +79,15 @@ $ curl -s https://xxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/ping | python
 {
     "pong": "Hello, World!"
 }
+```
+
+
+CMD
+
+```
+sam build --parameter-overrides ParameterKey=Environment,ParameterValue=dev
+
+sam deploy --guided --parameter-overrides ParameterKey=Environment,ParameterValue=dev
+
+sam delete --stack-name sam-app
 ```
