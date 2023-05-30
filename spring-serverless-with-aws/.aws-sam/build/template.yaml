@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: AWS Serverless Spring Boot 2 API - com.gateam.spring.serverless::spring-serverless-with-aws
+Description: AWS Serverless Spring Boot 2 API
 Globals:
   Api:
     EndpointConfiguration: REGIONAL
@@ -15,7 +15,8 @@ Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: dev
+      StageName:
+        Ref: EnvironmentName
       OpenApiVersion: '2.0'
       Description: API supporting the application
       Cors:
@@ -31,6 +32,12 @@ Resources:
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 30
+      Environment:
+        Variables:
+          RDS_HOSTNAME: jdbc:mysql://103.221.222.89:3306
+          RDS_DB_NAME: tvpqtaog_docter
+          RDS_USERNAME: tvpqtaog_gankteam
+          RDS_PASSWORD: P@sslag1
       Events:
         ProxyResource:
           Type: Api

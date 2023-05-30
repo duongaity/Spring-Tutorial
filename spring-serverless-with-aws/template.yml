@@ -14,6 +14,10 @@ Parameters:
     Description: 'Required. Environment you are deploying'
     Type: String
     Default: dev
+  DomainName:
+    Description: 'Required. Domain you are deploying'
+    Type: String
+    Default: api.example.com
 
 Resources:
   ApiGatewayApi:
@@ -35,6 +39,12 @@ Resources:
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 30
+      Environment:
+        Variables:
+          RDS_HOSTNAME: jdbc:mysql://db-serverless.c2zsb9ir0usp.us-east-1.rds.amazonaws.com_3306
+          RDS_DB_NAME: db-serverless
+          RDS_USERNAME: root
+          RDS_PASSWORD: 12345678
       Events:
         ProxyResource:
           Type: Api

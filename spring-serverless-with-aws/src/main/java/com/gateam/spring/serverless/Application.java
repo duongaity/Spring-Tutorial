@@ -9,9 +9,9 @@ import com.gateam.spring.serverless.controller.PingController;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.gateam.spring.serverless.*"})
 // We use direct @Import instead of @ComponentScan to speed up cold starts
- @ComponentScan(basePackages = "com.gateam.spring.serverless.controller")
+// @ComponentScan(basePackages = "com.gateam.spring.serverless.controller")
 //@Import({ PingController.class })
 @EnableWebMvc
 public class Application {
